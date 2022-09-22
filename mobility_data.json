@@ -1,0 +1,66 @@
+[{
+    "id": 1
+    ,
+    "position": [
+        {
+            "longitude": 10.5,
+            "latitude" : 8.5,
+            "time" : 123124124
+        },
+        {
+            "longitude": 10.5,
+            "latitude" : 8.5,
+            "time" : 123124124
+        }
+    ]
+}, {
+    "id": 2
+    ,
+    "position": [
+        {
+            "longitude": 10.5,
+            "latitude" : 8.5,
+            "time" : 123124124
+        },
+        {
+            "longitude": 10.5,
+            "latitude" : 8.5,
+            "time" : 123124124
+        }
+    ]
+}, {
+    "id": 3
+    ,
+    "position": [
+        {
+            "longitude": 10.5,
+            "latitude" : 8.5,
+            "time" : 123124124
+        },
+        {
+            "longitude": 10.5,
+            "latitude" : 8.5,
+            "time" : 123124124
+        }
+    ]
+}, {
+    "id": 4
+    ,
+    "position": [
+        {
+            "longitude": 10.5,
+            "latitude" : 8.5,
+            "time" : 123124124
+        },
+        {
+            "longitude": 1,
+            "latitude" : 45.5,
+            "time" : 123341245
+        },
+        {
+            "longitude": 14.5,
+            "latitude" : 80.5,
+            "time" : 123786785
+        }
+    ]
+}]

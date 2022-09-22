@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package mobility;
+
+service Mobility {
+    rpc Put(Vehicle) returns (PutResponse) {}
+
+    rpc Get(Identifier) returns (Position) {}
+
+    rpc Search(SearchRequest) returns (stream Vehicle) {}
+
+    rpc History(HistoryRequest) returns (stream Position) {}
+}
+
+message Identifier {
+    int32 id = 1;
+}
+
+message Position {
+    float longitude = 1;
+    float latitude = 2;
+}
+
+message Time {
+    int32 time = 1;
+}
+
+message Vehicle {
+    Identifier id = 1;
+    Position pos = 2;
+}
+
+message SearchRequest {
+    Position pos = 1;
+    float radius = 2;
+}
+
+message HistoryRequest {
+    Identifier id = 1;
+    Time start = 2;
+    Time end = 3;
+}
+
+message PutResponse {
+    string response = 1;
+}
