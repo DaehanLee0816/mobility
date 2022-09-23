@@ -8,15 +8,12 @@ import mobility_pb2
 import mobility_pb2_grpc
 import mobility_resources
 
-def get_vehicle(id_db, position_db, tgt):
-    i = 0
-    for i_th_id in id_db:
-        if i_th_id == tgt.id:
-            tgt_long = position_db[i][-1][0]
-            tgt_lat = positon_db[i][-1][1]
+def get_vehicle(data_list, tgt):
+    for data in data_list:
+        if data['id'] == tgt.id:
+            tgt_long = data['position'][-1]['longitude']
+            tgt_lat = data['position'][-1]['latitude']
             return mobility_pb2.Position(longitude=tgt_long, latitude=tgt_lat)
-        else:
-            i = i + 1
     return None
 
 def get_distance(pt_1, pt_2):
@@ -29,59 +26,46 @@ def get_distance(pt_1, pt_2):
     sqr_sum = pow(delta_lat, 2) + pow(delta_long, 2)
     return math.sqrt(sqr_sum)
 
-def put_vehicle(id_db, position_db, vehicle):
-    i = 0
+def put_vehicle(data_list, vehicle):
     time = time.time()
-    for tgt_id in id_db:
-        if tgt_id == vehicle.id:
-            postion = {vehicle.pos.longitude, vehicle.pos.latitude, time}
-            position_db[i].append(position)
+    for data in data_list:
+        if data['id'] == vehicle.id:
+            data['position'].append({'longitude':vehicle.pos.longitude, 'latitude':vehicle.pos.latitude, 'time':time})
             return
-        else:
-            i = i + 1
-    id_db.append(tgt_id)
-    pos_list = []
-    position = {vehicle.pos.longitude, vehicle.pos.latitude, time}
-    pos_list.append(position)
-    position_db.append(pos_list)
+    data = {'id':vehicle.id, 'position':[{'longitude':vehicle.pos.longitude, 'latidue':vehicle.pos.latitude, 'time':time}]}
+    data_list.append(data)
+    return
 
 
 class MobilityServicer(mobility_pb2_grpc.MobilityServicer):
     def __init__(self):
-        self.id_db = mobility_resources.read_id()
-        self.position_db = mobility_resources.read_position_list()
+        self.data_list = mobility_resources.read_data()
 
     def Put(self, request, context):
-        put_vehicle(self.id_db, self.position_db, request)
+        put_vehicle(self.data_list, request)
         return mobility_pb2.PutResponse(response="Put id=%s method success" % request.id)
 
     def Get(self, request, context):
-        vehicle = get_vehicle(self.id_db, self.position_db, request)
-        if vehicle is None:
+        position = get_vehicle(self.data_list, request)
+        if position is None:
             return mobility_pb2.Position(longitude=-1, latitude=-1)
         else:
-            return vehicle
+            return position
     
     def Search(self, request, context):
-        i = 0
-        for pos_list in self.position_db:
-            position = mobility_pb2.Position(longitude=pos_list[-1][0], latitude=pos_list[-1][1])
+        for data in self.data_list:
+            position = mobility_pb2.Position(longitude=data['position'][-1]['longitude'], latitude=data['position'][-1]['latitude'])
             dist = get_distance(position, request.pos)
             if dist <= request.radius:
-                yield mobility_pb2.Vehicle(id=self.position_db[i], pos=position)
-            i = i+1
+                yield mobility_pb2.Vehicle(id=data['id'], pos=position)
     
     def History(self, request, context):
-        i = 0
-        for tgt_id in self.id_db:
-            if tgt_id == request.id:
-                pos_list = self.position_db[i]
-                for position in pos_list:
-                    if position[2] >= request.start.time and position[2] <= request.end.time:
-                        yield mobility_pb2.Position(longitude=position[0], latitude=position[1])
+        for data in self.data_list:
+            if data['id'] == request.id:
+                for position in data['position']:
+                    if position['time'] >= request.start.time and position['time'] <= request.end.time:
+                        yield mobility_pb2.Position(longitude=position['longitude'], latitude=position['latitude'])
                 return
-            else:
-                i=i+1
         return mobility_pb2.Position(longitude=-1, latitude=-1)
     
 

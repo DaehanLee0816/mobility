@@ -9,4 +9,6 @@ import mobility_pb2_grpc
 import mobility_resources
 
 
-def put
+def mobility_get_vehicle_internal(stub, tgt):
+    vehicle = stub.Get(tgt)
+    if not feature.location
