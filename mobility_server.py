@@ -27,14 +27,16 @@ def get_distance(pt_1, pt_2):
     return math.sqrt(sqr_sum)
 
 def put_vehicle(data_list, vehicle):
-    time = time.time()
+    recived_time = time.time()
     for data in data_list:
-        if data['id'] == vehicle.id:
-            data['position'].append({'longitude':vehicle.pos.longitude, 'latitude':vehicle.pos.latitude, 'time':time})
-            return
-    data = {'id':vehicle.id, 'position':[{'longitude':vehicle.pos.longitude, 'latidue':vehicle.pos.latitude, 'time':time}]}
+        if data['id'] == vehicle.id.id:
+            data['position'].append({'longitude':vehicle.pos.longitude, 'latitude':vehicle.pos.latitude, 'time':recived_time})
+            result = "Vehicle id " + str(vehicle.id.id) + " position is update to " + str(vehicle.pos.longitude) + ", " + str(vehicle.pos.latitude)
+            return result
+    data = {'id':vehicle.id.id, 'position':[{'longitude':vehicle.pos.longitude, 'latitude':vehicle.pos.latitude, 'time':recived_time}]}
+    result = "New vehicle id " + str(vehicle.id.id) + " is added to server"
     data_list.append(data)
-    return
+    return result
 
 
 class MobilityServicer(mobility_pb2_grpc.MobilityServicer):
@@ -42,8 +44,8 @@ class MobilityServicer(mobility_pb2_grpc.MobilityServicer):
         self.data_list = mobility_resources.read_data()
 
     def Put(self, request, context):
-        put_vehicle(self.data_list, request)
-        return mobility_pb2.PutResponse(response="Put id=%s method success" % request.id)
+        put_result = put_vehicle(self.data_list, request)
+        return mobility_pb2.PutResponse(response=put_result)
 
     def Get(self, request, context):
         position = get_vehicle(self.data_list, request)
@@ -57,11 +59,11 @@ class MobilityServicer(mobility_pb2_grpc.MobilityServicer):
             position = mobility_pb2.Position(longitude=data['position'][-1]['longitude'], latitude=data['position'][-1]['latitude'])
             dist = get_distance(position, request.pos)
             if dist <= request.radius:
-                yield mobility_pb2.Vehicle(id=data['id'], pos=position)
+                yield mobility_pb2.Vehicle(id=mobility_pb2.Identifier(id=data['id']), pos=position)
     
     def History(self, request, context):
         for data in self.data_list:
-            if data['id'] == request.id:
+            if data['id'] == request.id.id:
                 for position in data['position']:
                     if position['time'] >= request.start.time and position['time'] <= request.end.time:
                         yield mobility_pb2.Position(longitude=position['longitude'], latitude=position['latitude'])
