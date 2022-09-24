@@ -22,7 +22,7 @@ message Position {
 }
 
 message Time {
-    int32 time = 1;
+    float time = 1;
 }
 
 message Vehicle {

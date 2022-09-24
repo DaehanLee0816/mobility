@@ -31,11 +31,13 @@ def put_vehicle(data_list, vehicle):
     for data in data_list:
         if data['id'] == vehicle.id.id:
             data['position'].append({'longitude':vehicle.pos.longitude, 'latitude':vehicle.pos.latitude, 'time':recived_time})
+            mobility_resources.write_data(data_list)
             result = "Vehicle id " + str(vehicle.id.id) + " position is update to " + str(vehicle.pos.longitude) + ", " + str(vehicle.pos.latitude)
             return result
     data = {'id':vehicle.id.id, 'position':[{'longitude':vehicle.pos.longitude, 'latitude':vehicle.pos.latitude, 'time':recived_time}]}
     result = "New vehicle id " + str(vehicle.id.id) + " is added to server"
     data_list.append(data)
+    mobility_resources.write_data(data_list)
     return result
 
 
