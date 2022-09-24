@@ -1,59 +1,57 @@
 from __future__ import print_function
 
 import logging
-import random
 
 import grpc
 import mobility_pb2
 import mobility_pb2_grpc
-import mobility_resources
 
 
-def mobility_get_vehicle_internal(stub, tgt):
-    pos = stub.Get(tgt)
+def get(stub, id):
+    tgt_id = mobility_pb2.Identifier(id=id)
+    pos = stub.Get(tgt_id)
     if pos.longitude == -1:
-        print("Found no vehicle id %s" % tgt.id)
+        print("Found no vehicle id %s" % id)
+        return None
     else:
-        print("Vehicle id %s is in location, %.3f , %.3f"% (tgt.id, pos.longitude, pos.latitude))
+        print("Vehicle id %s is in location, %.3f , %.3f"% (tgt_id.id, pos.longitude, pos.latitude))
+        return [pos.longitude, pos.latitude]
 
 
-def mobility_get_vehicle(stub):
-    mobility_get_vehicle_internal(stub, mobility_pb2.Identifier(id=3))
-    mobility_get_vehicle_internal(stub, mobility_pb2.Identifier(id=10))
-
-
-def mobility_put_vehicle_internal(stub, tgt_vehicle):
-    put_result = stub.Put(tgt_vehicle)
+def put(stub, id, long, lat):
+    vehicle = mobility_pb2.Vehicle(id=mobility_pb2.Identifier(id=id), pos=mobility_pb2.Position(longitude=long, latitude=lat))
+    put_result = stub.Put(vehicle)
     print(put_result)
 
 
-def mobility_put_vehicle(stub):
-    mobility_put_vehicle_internal(stub, mobility_pb2.Vehicle(id=mobility_pb2.Identifier(id=3), pos=mobility_pb2.Position(longitude=10.2123, latitude=13.2424)))
-    mobility_put_vehicle_internal(stub, mobility_pb2.Vehicle(id=mobility_pb2.Identifier(id=15), pos=mobility_pb2.Position(longitude=142, latitude=121)))
-
-
-def mobility_search_vehicle(stub):
-    results = stub.Search(mobility_pb2.SearchRequest(pos=mobility_pb2.Position(longitude=10, latitude=10), radius=5))
+def search(stub, long, lat, dist):
+    results = stub.Search(mobility_pb2.SearchRequest(pos=mobility_pb2.Position(longitude=long, latitude=lat), radius=dist))
     for result in results:
         print("Vehicle which have id %s is in location, %.3f , %.3f"% (result.id.id, result.pos.longitude, result.pos.latitude))
+    return results
 
 
-def mobility_history_vehicle(stub):
-    results = stub.History(mobility_pb2.HistoryRequest(id=mobility_pb2.Identifier(id=1), start=mobility_pb2.Time(time=123124124), end=mobility_pb2.Time(time=123124155)))
+def history(stub, id, start_time, end_time):
+    req = mobility_pb2.HistoryRequest(id=mobility_pb2.Identifier(id=id), start=mobility_pb2.Time(time=start_time), end=mobility_pb2.Time(time=end_time))
+    results = stub.History(req)
     for result in results:
         print("Vehicle is in location %.3f , %.3f"% (result.longitude, result.latitude))
+    return results
 
 def run():
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = mobility_pb2_grpc.MobilityStub(channel)
         print("----------Get----------")
-        mobility_get_vehicle(stub)
+        get(stub, 1)
+        get(stub, 10)
         print("----------Put----------")
-        mobility_put_vehicle(stub)
+        put(stub, 3, 10.2123, 13.2424)
+        put(stub, 5, 142, 121)
+        put(stub, 5, 145, 118)
         print("----------Search----------")
-        mobility_search_vehicle(stub)
+        search(stub, 10, 10, 5)
         print("----------History----------")
-        mobility_history_vehicle(stub)
+        history(stub, 1, 1664031111.9978276, 1664031113.9978276)
 
 if __name__ == '__main__':
     logging.basicConfig()

@@ -17,12 +17,12 @@ message Identifier {
 }
 
 message Position {
-    float longitude = 1;
-    float latitude = 2;
+    double longitude = 1;
+    double latitude = 2;
 }
 
 message Time {
-    float time = 1;
+    double time = 1;
 }
 
 message Vehicle {
@@ -32,7 +32,7 @@ message Vehicle {
 
 message SearchRequest {
     Position pos = 1;
-    float radius = 2;
+    double radius = 2;
 }
 
 message HistoryRequest {
